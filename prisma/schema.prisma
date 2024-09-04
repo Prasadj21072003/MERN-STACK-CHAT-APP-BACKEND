@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+
+
+
+generator client {
+  provider = "prisma-client-js"
+ 
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  username String @unique
+  fullName String
+  password String
+  profilepic String
+  gender String
+
+conversationids String[] @db.ObjectId
+Conversation Conversation[]
+
+messageids String[] @db.ObjectId
+message Message[] 
+groups groups[]
+}
+
+model groups {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  groupname String @unique
+
+participantIds String[] @db.ObjectId
+participants User? @relation(fields: [participantIds], references: [id])
+
+conversationId String? @db.ObjectId
+conversation Conversation? @relation(fields: [conversationId], references: [id])
+
+
+}
+
+model Conversation{
+ id String @id @default(auto()) @map("_id") @db.ObjectId
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
+
+type String
+groupname String?
+
+participantIds String[] @db.ObjectId
+participants User? @relation(fields: [participantIds], references: [id])
+
+messageIds String[] 
+message Message[]
+groups groups[]
+
+}
+
+
+
+model Message{
+id String @id @default(auto()) @map("_id") @db.ObjectId
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
+
+conversationId String @db.ObjectId
+coversation Conversation? @relation(fields:[conversationId],references: [id])
+
+senderId String @db.ObjectId
+sender User? @relation(fields:[senderId],references: [id])
+
+
+
+body String
+
+}

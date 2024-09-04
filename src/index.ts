@@ -12,7 +12,7 @@ const PORT: Number | String = process.env.PORT || 5000;
 
 app.use(
   cors({
-    origin: "https://mern-stack-chat-app-j6wn.vercel.app/",
+    origin: "https://fantastic-muffin-144477.netlify.app/",
     credentials: true,
   })
 );

@@ -32,11 +32,6 @@ export const signup = async (req: Request, res: Response) => {
     });
 
     if (newuser) {
-      const newconvo = await prisma.allconvo.create({
-        data: {
-          convoid: newuser?.id,
-        },
-      });
       res.json({
         id: newuser.id,
       });

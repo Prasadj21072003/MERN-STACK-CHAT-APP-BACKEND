@@ -143,17 +143,8 @@ export const getuserforsidebar = async (req: Request, res: Response) => {
         conversation: true,
       },
     });
-    const ids = await prisma.allconvo.findMany({
-      where: {
-        convoid: {
-          not: senderId,
-        },
-      },
-      select: {
-        convoid: true,
-      },
-    });
-    data = [users, groups, ids];
+
+    data = [users, groups];
 
     res.json(data);
   } catch (error) {
@@ -199,11 +190,6 @@ export const makegroup = async (req: Request, res: Response) => {
       });
 
       if (newgroup) {
-        const newconvo = await prisma.allconvo.create({
-          data: {
-            convoid: newgroup?.id,
-          },
-        });
         res.json({
           id: newgroup.id,
           groupname: newgroup.groupname,

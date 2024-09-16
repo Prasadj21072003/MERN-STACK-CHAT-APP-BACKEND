@@ -12,7 +12,7 @@ const PORT: Number | String = process.env.PORT || 5000;
 
 app.use(
   cors({
-    origin: "*",
+    origin: "mern-stack-chat-app-frontend.vercel.app",
     credentials: true,
   })
 );

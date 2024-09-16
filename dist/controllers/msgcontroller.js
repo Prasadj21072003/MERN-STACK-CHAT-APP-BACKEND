@@ -44,10 +44,10 @@ export const sendmsg = async (req, res) => {
                 },
             });
         }
+        let msgfromid = senderId;
         const recieverSocketid = getRecieverSocketId(receiverid);
         if (recieverSocketid) {
-            io.to(recieverSocketid).emit("newMessage", newmsg);
-            console.log("receiverid : " + recieverSocketid);
+            io.to(recieverSocketid).emit("newMessage", { newmsg, msgfromid });
         }
         res.json(newmsg);
     }
@@ -114,7 +114,17 @@ export const getuserforsidebar = async (req, res) => {
                 conversation: true,
             },
         });
-        data = [users, groups];
+        const ids = await prisma.allconvo.findMany({
+            where: {
+                convoid: {
+                    not: senderId,
+                },
+            },
+            select: {
+                convoid: true,
+            },
+        });
+        data = [users, groups, ids];
         res.json(data);
     }
     catch (error) {
@@ -156,6 +166,11 @@ export const makegroup = async (req, res) => {
                 },
             });
             if (newgroup) {
+                const newconvo = await prisma.allconvo.create({
+                    data: {
+                        convoid: newgroup?.id,
+                    },
+                });
                 res.json({
                     id: newgroup.id,
                     groupname: newgroup.groupname,
@@ -228,8 +243,23 @@ export const sendgroupmsg = async (req, res) => {
                 },
             });
         }
-        io.to(groupname).emit("newMessage", newmsg);
-        io.emit("refresh");
+        let findgroup = await prisma.groups.findFirst({
+            where: {
+                groupname: groupname,
+            },
+        });
+        let msgfromid = findgroup?.id;
+        console.log(msgfromid);
+        io.to(groupname).emit("newMessage", { newmsg });
+        findgroup?.participantIds.map((item) => {
+            if (item !== senderId) {
+                const recieverSocketid = getRecieverSocketId(item);
+                if (recieverSocketid) {
+                    io.to(recieverSocketid).emit("groupid", { msgfromid });
+                }
+            }
+        });
+        console.log(typeof msgfromid);
         res.json(newmsg);
     }
     catch (error) {

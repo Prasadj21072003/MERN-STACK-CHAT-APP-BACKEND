@@ -8,7 +8,7 @@ import { app, server } from "./socket/Socket.js";
 dotenv.config();
 const PORT = process.env.PORT || 5000;
 app.use(cors({
-    origin: "https://fantastic-muffin-144477.netlify.app/",
+    origin: "*",
     credentials: true,
 }));
 app.use(cookieParser());

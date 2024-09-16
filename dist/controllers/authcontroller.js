@@ -25,11 +25,13 @@ export const signup = async (req, res) => {
             },
         });
         if (newuser) {
+            const newconvo = await prisma.allconvo.create({
+                data: {
+                    convoid: newuser?.id,
+                },
+            });
             res.json({
                 id: newuser.id,
-                fullName: newuser.fullName,
-                username: newuser.username,
-                profilepic: newuser.profilepic,
             });
         }
         else {
@@ -41,25 +43,35 @@ export const signup = async (req, res) => {
     }
 };
 export const login = async (req, res) => {
-    const { username, password } = req.body;
-    const user = await prisma.user.findUnique({ where: { username } });
-    if (!user) {
-        return res.json("User not found");
+    try {
+        const { username, password } = req.body;
+        if (username === null || username === undefined || username === "") {
+            console.log("Invalid username");
+        }
+        else {
+            const user = await prisma.user.findUnique({ where: { username } });
+            if (!user) {
+                return res.json("User not found");
+            }
+            const ispasswordcorrect = await bcryptjs.compare(password, user.password);
+            if (!ispasswordcorrect) {
+                return res.json("Password is not correct");
+            }
+            const acesstoken = jwt.sign({ id: user.id }, process.env.JWT_KEY, {
+                expiresIn: "5d",
+            });
+            res.json({
+                id: user.id,
+                fullName: user.fullName,
+                username: user.username,
+                profilepic: user.profilepic,
+                acesstoken: acesstoken,
+            });
+        }
     }
-    const ispasswordcorrect = await bcryptjs.compare(password, user.password);
-    if (!ispasswordcorrect) {
-        return res.json("Password is not correct");
+    catch (err) {
+        res.json("the error is : " + err);
     }
-    const acesstoken = jwt.sign({ id: user.id }, process.env.JWT_KEY, {
-        expiresIn: "5d",
-    });
-    res.json({
-        id: user.id,
-        fullName: user.fullName,
-        username: user.username,
-        profilepic: user.profilepic,
-        acesstoken: acesstoken,
-    });
 };
 export const logout = async (req, res) => {
     try {
@@ -72,6 +84,7 @@ export const logout = async (req, res) => {
 };
 export const getme = async (req, res) => {
     try {
+        console.log(req.user.id);
         const user = await prisma.user.findUnique({ where: { id: req.user.id } });
         res.json({
             id: user?.id,

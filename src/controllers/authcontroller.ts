@@ -32,11 +32,13 @@ export const signup = async (req: Request, res: Response) => {
     });
 
     if (newuser) {
+      const newconvo = await prisma.allconvo.create({
+        data: {
+          convoid: newuser?.id,
+        },
+      });
       res.json({
         id: newuser.id,
-        fullName: newuser.fullName,
-        username: newuser.username,
-        profilepic: newuser.profilepic,
       });
     } else {
       res.json({ error: "Invalid user data" });
@@ -47,28 +49,42 @@ export const signup = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
-  const { username, password } = req.body;
-  const user = await prisma.user.findUnique({ where: { username } });
-  if (!user) {
-    return res.json("User not found");
+  try {
+    const { username, password } = req.body;
+
+    if (username === null || username === undefined || username === "") {
+      console.log("Invalid username");
+    } else {
+      const user = await prisma.user.findUnique({ where: { username } });
+
+      if (!user) {
+        return res.json("User not found");
+      }
+      const ispasswordcorrect = await bcryptjs.compare(password, user.password);
+
+      if (!ispasswordcorrect) {
+        return res.json("Password is not correct");
+      }
+
+      const acesstoken = jwt.sign(
+        { id: user.id },
+        process.env.JWT_KEY as string,
+        {
+          expiresIn: "5d",
+        }
+      );
+
+      res.json({
+        id: user.id,
+        fullName: user.fullName,
+        username: user.username,
+        profilepic: user.profilepic,
+        acesstoken: acesstoken,
+      });
+    }
+  } catch (err) {
+    res.json("the error is : " + err);
   }
-  const ispasswordcorrect = await bcryptjs.compare(password, user.password);
-
-  if (!ispasswordcorrect) {
-    return res.json("Password is not correct");
-  }
-
-  const acesstoken = jwt.sign({ id: user.id }, process.env.JWT_KEY as string, {
-    expiresIn: "5d",
-  });
-
-  res.json({
-    id: user.id,
-    fullName: user.fullName,
-    username: user.username,
-    profilepic: user.profilepic,
-    acesstoken: acesstoken,
-  });
 };
 
 export const logout = async (req: Request, res: Response) => {
@@ -82,6 +98,7 @@ export const logout = async (req: Request, res: Response) => {
 
 export const getme = async (req: Request, res: Response) => {
   try {
+    console.log(req.user.id);
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
 
     res.json({

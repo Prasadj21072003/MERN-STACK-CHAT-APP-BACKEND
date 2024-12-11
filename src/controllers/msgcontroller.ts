@@ -70,9 +70,12 @@ export const sendmsg = async (req: Request, res: Response) => {
       });
     }
     let msgfromid = senderId;
+
     const recieverSocketid = getRecieverSocketId(receiverid);
     if (recieverSocketid) {
+      console.log("Reciever");
       io.to(recieverSocketid).emit("newMessage", { newmsg, msgfromid });
+      console.log("get-Reciever");
     }
 
     res.json(newmsg);
@@ -277,19 +280,18 @@ export const sendgroupmsg = async (req: Request, res: Response) => {
     });
 
     let msgfromid = findgroup?.id;
-    console.log(msgfromid);
-    io.to(groupname).emit("newMessage", { newmsg });
 
+    io.to(groupname).emit("newMessage", { newmsg });
+    console.log("newMessage");
     findgroup?.participantIds.map((item) => {
       if (item !== senderId) {
         const recieverSocketid = getRecieverSocketId(item);
         if (recieverSocketid) {
           io.to(recieverSocketid).emit("groupid", { msgfromid });
+          console.log("groupid");
         }
       }
     });
-
-    console.log(typeof msgfromid);
 
     res.json(newmsg);
   } catch (error) {

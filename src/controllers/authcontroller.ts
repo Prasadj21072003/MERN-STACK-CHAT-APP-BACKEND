@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import prisma from "../db/prisma.js";
 import bcryptjs from "bcryptjs";
-
 import jwt from "jsonwebtoken";
 
 export const get = (req: Request, res: Response) => {

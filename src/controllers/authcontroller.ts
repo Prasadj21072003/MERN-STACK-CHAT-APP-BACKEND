@@ -2,20 +2,6 @@ import { Request, Response } from "express";
 import prisma from "../db/prisma.js";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { createClient } from "redis";
-
-const client = createClient({
-  username: "default",
-  password: process.env.REDIS_PASSWORD,
-  socket: {
-    host: process.env.REDIS_HOST,
-    port: Number(process.env.REDIS_PORT),
-  },
-});
-
-client.on("error", (err) => console.log("Redis Client Error", err));
-
-await client.connect();
 
 export const get = (req: Request, res: Response) => {
   res.json("hello");
@@ -65,16 +51,7 @@ export const login = async (req: Request, res: Response) => {
     if (username === null || username === undefined || username === "") {
       console.log("Invalid username");
     } else {
-      var user;
-      const cachedchatuser = await client.get("chatuser");
-      if (cachedchatuser) {
-        user = JSON.parse(cachedchatuser).find(
-          (user: any) => user.username === username
-        );
-      }
-      if (!cachedchatuser) {
-        user = await prisma.user.findUnique({ where: { username } });
-      }
+      let user = await prisma.user.findUnique({ where: { username } });
 
       if (!user) {
         return res.json("User not found");

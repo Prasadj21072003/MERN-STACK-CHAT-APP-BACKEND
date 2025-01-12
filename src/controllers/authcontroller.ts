@@ -7,6 +7,7 @@ export const get = (req: Request, res: Response) => {
   res.json("hello");
 };
 
+//signup
 export const signup = async (req: Request, res: Response) => {
   try {
     const { fullName, username, password, gender } = req.body;
@@ -42,6 +43,7 @@ export const signup = async (req: Request, res: Response) => {
   }
 };
 
+//login
 export const login = async (req: Request, res: Response) => {
   try {
     const { username, password } = req.body;

@@ -8,7 +8,7 @@ import { app, server } from "./socket/Socket.js";
 dotenv.config();
 const PORT = process.env.PORT || 5000;
 app.use(cors({
-    origin: "http://localhost:5173", //https://mern-stack-chat-app-frontend.vercel.app
+    origin: process.env.FRONTEND_URL,
     credentials: true,
 }));
 app.use(cookieParser());
